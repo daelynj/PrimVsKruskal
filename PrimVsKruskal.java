@@ -52,63 +52,65 @@ public class PrimVsKruskal{
 		int n = G.length;
 		boolean pvk = true;
 		
+		//Create our edgeweighted graph based off of the length of G
 		EdgeWeightedGraph ew_graph = new EdgeWeightedGraph(n);
 
+		//add all of the edges to our graph, except that we are testing at every step as an early failsafe
 		for (int i = 0; i < n; i++) {
 			for (int j = i; j < n; j++) {
 				if (G[i][j] > 0) {
-					Edge edge = new Edge(i,j, (double)G[i][j]);
-					ew_graph.addEdge(edge);
+					Edge e = new Edge(i,j, (double)G[i][j]);
+					ew_graph.addEdge(e);
+				}
+				//System.out.println(ew_graph.toString());
+
+				PrimMST mst_prim = new PrimMST(ew_graph);
+				KruskalMST mst_kruskal = new KruskalMST(ew_graph);
+
+				//System.out.println(mst_kruskal.edges());
+
+				//I wasn't really sure what the best way to compare the graphs was, so I just made them back into matrices and compared them
+				double[][] prim_mat = new double[n][n];
+				double[][] kruskal_mat = new double[n][n];
+
+				//ugly unreadable code, but owell
+				for (Edge edge : mst_prim.edges()) {
+					prim_mat[edge.other(edge.either())][edge.either()] = prim_mat[edge.either()][edge.other(edge.either())] = edge.weight();
+				}
+				
+				for (Edge edge : mst_kruskal.edges()) {
+					kruskal_mat[edge.other(edge.either())][edge.either()] = kruskal_mat[edge.either()][edge.other(edge.either())] = edge.weight();
+				}
+
+				/*for (int a = 0; a < n; a++) {
+					System.out.println();
+					for (int b = a; b < n; b++) {
+						System.out.print((int)prim_matrix[a][b] + " ");
+					}
+				}
+
+				System.out.println();
+
+				for (int a = 0; a < n; a++) {
+					System.out.println();
+					for (int b = a; b < n; b++) {
+						System.out.print((int)kruskal_matrix[a][b] + " ");
+					}
+				}*/
+
+				for (int a = 0; a < n; a++) {
+					for (int b = a; b < n; b++) {
+						if ((int)prim_mat[a][b] != (int)kruskal_mat[a][b]) {
+							pvk = false;
+							return pvk;
+						}
+					}
 				}
 			}
 		}
-
-		//System.out.println(ew_graph.toString());
-
-		KruskalMST mst_kruskal = new KruskalMST(ew_graph);
-		PrimMST mst_prim = new PrimMST(ew_graph);
-
-		System.out.println(mst_kruskal.edges());
-
-		double[][] prim_matrix = new double[n][n];
-		double[][] kruskal_matrix = new double[n][n];
-
-		for (Edge e : mst_prim.edges()) {
-			prim_matrix[e.other(e.either())][e.either()] = prim_matrix[e.either()][e.other(e.either())] = e.weight();
-		}
 		
-		for (Edge e : mst_kruskal.edges()) {
-			kruskal_matrix[e.other(e.either())][e.either()] = kruskal_matrix[e.either()][e.other(e.either())] = e.weight();
-		}
-
-		for (int a = 0; a < n; a++) {
-			System.out.println();
-			for (int b = a; b < n; b++) {
-				System.out.print((int)prim_matrix[a][b] + " ");
-			}
-		}
-
-		System.out.println();
-
-		for (int a = 0; a < n; a++) {
-			System.out.println();
-			for (int b = a; b < n; b++) {
-				System.out.print((int)kruskal_matrix[a][b] + " ");
-			}
-		}
-
-		for (int a = 0; a < n; a++) {
-			for (int b = 0; b < n; b++) {
-				if ((int)prim_matrix[a][b] != (int)kruskal_matrix[a][b]) {
-					pvk = false;
-					break;
-				}
-			}
-		}
-		
-		System.out.println();
-
-		return pvk;	
+		//System.out.println();
+		return pvk;
 	}
 		
 	/* main()
