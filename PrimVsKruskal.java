@@ -27,8 +27,6 @@
    vertex i to vertex j (if G[i][j] is 0.0, then the edge does not exist).
    Note that since the graph is undirected, it is assumed that G[i][j]
    is always equal to G[j][i].
-
-
    R. Little - 03/07/2019
 */
 
@@ -49,18 +47,66 @@ public class PrimVsKruskal{
 		value of G[i][j] gives the weight of the edge.
 		No entries of G will be negative.
 	*/
+
 	static boolean PrimVsKruskal(double[][] G){
 		int n = G.length;
-
-		/* Build the MST by Prim's and the MST by Kruskal's */
-		/* (You may add extra methods if necessary) */
-		
-		/* ... Your code here ... */
-		
-		
-		/* Determine if the MST by Prim equals the MST by Kruskal */
 		boolean pvk = true;
-		/* ... Your code here ... */
+		
+		EdgeWeightedGraph ew_graph = new EdgeWeightedGraph(n);
+
+		for (int i = 0; i < n; i++) {
+			for (int j = i; j < n; j++) {
+				if (G[i][j] > 0) {
+					Edge edge = new Edge(i,j, (double)G[i][j]);
+					ew_graph.addEdge(edge);
+				}
+			}
+		}
+
+		//System.out.println(ew_graph.toString());
+
+		KruskalMST mst_kruskal = new KruskalMST(ew_graph);
+		PrimMST mst_prim = new PrimMST(ew_graph);
+
+		System.out.println(mst_kruskal.edges());
+
+		double[][] prim_matrix = new double[n][n];
+		double[][] kruskal_matrix = new double[n][n];
+
+		for (Edge e : mst_prim.edges()) {
+			prim_matrix[e.other(e.either())][e.either()] = prim_matrix[e.either()][e.other(e.either())] = e.weight();
+		}
+		
+		for (Edge e : mst_kruskal.edges()) {
+			kruskal_matrix[e.other(e.either())][e.either()] = kruskal_matrix[e.either()][e.other(e.either())] = e.weight();
+		}
+
+		for (int a = 0; a < n; a++) {
+			System.out.println();
+			for (int b = a; b < n; b++) {
+				System.out.print((int)prim_matrix[a][b] + " ");
+			}
+		}
+
+		System.out.println();
+
+		for (int a = 0; a < n; a++) {
+			System.out.println();
+			for (int b = a; b < n; b++) {
+				System.out.print((int)kruskal_matrix[a][b] + " ");
+			}
+		}
+
+		for (int a = 0; a < n; a++) {
+			for (int b = 0; b < n; b++) {
+				if ((int)prim_matrix[a][b] != (int)kruskal_matrix[a][b]) {
+					pvk = false;
+					break;
+				}
+			}
+		}
+		
+		System.out.println();
 
 		return pvk;	
 	}
@@ -71,7 +117,7 @@ public class PrimVsKruskal{
 	   during marking, and the testing process used for marking will not
 	   execute any of the code below. 
 	*/
-   public static void main(String[] args) {
+	public static void main(String[] args) {
 		Scanner s;
 		if (args.length > 0){
 			try{
