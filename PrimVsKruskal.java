@@ -30,12 +30,12 @@
    R. Little - 03/07/2019
 */
 
- import edu.princeton.cs.algs4.*;
- import java.util.Scanner;
- import java.io.File;
+import edu.princeton.cs.algs4.*;
+import java.util.Scanner;
+import java.io.File;
 
 //Do not change the name of the PrimVsKruskal class
-public class PrimVsKruskal{
+public class PrimVsKruskal {
 
 	/* PrimVsKruskal(G)
 		Given an adjacency matrix for connected graph G, with no self-loops or parallel edges,
@@ -46,73 +46,204 @@ public class PrimVsKruskal{
 		If G[i][j] > 0.0, there is an edge between vertices i and j, and the
 		value of G[i][j] gives the weight of the edge.
 		No entries of G will be negative.
-	*/
+    */
+    /*for (int a = 0; a < n; a++) {
+        System.out.println();
+        for (int b = a; b < n; b++) {
+            System.out.print((int)prim_matrix[a][b] + " ");
+        }
+    }
 
-	static boolean PrimVsKruskal(double[][] G){
-		int n = G.length;
-		boolean pvk = true;
-		
-		//Create our edgeweighted graph based off of the length of G
-		EdgeWeightedGraph ew_graph = new EdgeWeightedGraph(n);
+    System.out.println();
 
-		//add all of the edges to our graph, except that we are testing at every step as an early failsafe
-		for (int i = 0; i < n; i++) {
-			for (int j = i; j < n; j++) {
-				if (G[i][j] > 0) {
-					Edge e = new Edge(i,j, (double)G[i][j]);
-					ew_graph.addEdge(e);
-				}
-				//System.out.println(ew_graph.toString());
+    for (int a = 0; a < n; a++) {
+        System.out.println();
+        for (int b = a; b < n; b++) {
+            System.out.print((int)kruskal_matrix[a][b] + " ");
+        }
+    }*/
+    /*
+    EdgeWeightedGraph ew_graph = new EdgeWeightedGraph(n);
 
-				PrimMST mst_prim = new PrimMST(ew_graph);
-				KruskalMST mst_kruskal = new KruskalMST(ew_graph);
+    //add all of the edges to our graph, except that we are testing at every step as an early failsafe
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            if (G[i][j] > 0) {
+                Edge e = new Edge(i,j, (double)G[i][j]);
+                ew_graph.addEdge(e);
+            }
+        }
+    }
+    */
 
-				//System.out.println(mst_kruskal.edges());
+    static boolean PrimVsKruskal(double[][] G) {
 
-				//I wasn't really sure what the best way to compare the graphs was, so I just made them back into matrices and compared them
-				double[][] prim_mat = new double[n][n];
-				double[][] kruskal_mat = new double[n][n];
+        Prim_MST prim_mst = new Prim_MST(G);
+        Kruskal_MST kruskal_mst = new Kruskal_MST(G);
 
-				//ugly unreadable code, but owell
-				for (Edge edge : mst_prim.edges()) {
-					prim_mat[edge.other(edge.either())][edge.either()] = prim_mat[edge.either()][edge.other(edge.either())] = edge.weight();
-				}
-				
-				for (Edge edge : mst_kruskal.edges()) {
-					kruskal_mat[edge.other(edge.either())][edge.either()] = kruskal_mat[edge.either()][edge.other(edge.either())] = edge.weight();
-				}
+        Edge k_edge = null;
+        Edge p_edge = null;
 
-				/*for (int a = 0; a < n; a++) {
-					System.out.println();
-					for (int b = a; b < n; b++) {
-						System.out.print((int)prim_matrix[a][b] + " ");
-					}
-				}
+        while (kruskal_mst.pq.isEmpty() == false && kruskal_mst.mst.size() < G.length - 1 || prim_mst.pq.isEmpty() == false) {
+            if (kruskal_mst.pq.isEmpty() == false && kruskal_mst.mst.size() < G.length - 1) {
+                try {
+                    k_edge = kruskal_mst.greedy_kruskal(G);
 
-				System.out.println();
+                    if (is_a_cycle(k_edge, prim_mst.uf, prim_mst.edges()) == true) {
+                        return false;
+                    }
+                }
+                catch (NullPointerException e) {}
+            }
 
-				for (int a = 0; a < n; a++) {
-					System.out.println();
-					for (int b = a; b < n; b++) {
-						System.out.print((int)kruskal_matrix[a][b] + " ");
-					}
-				}*/
+            if (prim_mst.pq.isEmpty() == false) {
+                try {
+                    p_edge = prim_mst.greedy_prim(G);
 
-				for (int a = 0; a < n; a++) {
-					for (int b = a; b < n; b++) {
-						if ((int)prim_mat[a][b] != (int)kruskal_mat[a][b]) {
-							pvk = false;
-							return pvk;
-						}
-					}
-				}
-			}
-		}
-		
-		//System.out.println();
-		return pvk;
-	}
-		
+                    if (is_a_cycle(p_edge, kruskal_mst.uf, kruskal_mst.edges()) == true) {
+                        return false;
+                    }
+                }
+                catch (NullPointerException e) {}
+            }
+        }
+        return true;
+    }
+
+    public static boolean is_a_cycle(Edge e, UF uf, Iterable<Edge> mst) {
+        boolean not_in_mst = true;
+        for (Edge edge : mst) {
+            if (check_edge(e, edge) == true) {
+                not_in_mst = false;
+            }
+        }
+        if (uf.connected(e.either(), e.other(e.either())) == true && not_in_mst == true) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    public static boolean check_edge(Edge edge_1, Edge edge_2) {
+        if (edge_1.weight() == edge_2.weight()) {
+            if (edge_1.either() == edge_2.either() && edge_1.other(edge_1.either()) == edge_2.other(edge_2.either())) {
+                return true;
+            }
+            if (edge_1.other(edge_1.either()) == edge_2.either() && edge_1.either() == edge_2.other(edge_2.either())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    static class Kruskal_MST {
+        public static final double FLOATING_POINT_EPSILON = 1E-12;
+        public MinPQ<Edge> pq;
+        public Queue<Edge> mst = new Queue<Edge>(); // edges in MST
+        public UF uf;
+
+        public Kruskal_MST(double[][] G) {
+            // more efficient to build heap by passing array of edges
+            this.pq = new MinPQ<Edge>();
+
+            for(int row = 0; row < G.length; row++) {
+                for(int col = row + 1; col < G.length; col++) {
+                    if (G[row][col] > 0) {
+                        Edge temp_edge = new Edge(row, col, G[row][col]);
+                        pq.insert(temp_edge);
+                    }
+                }
+            }
+            this.uf = new UF(G.length);
+        }
+        public Edge greedy_kruskal(double[][] G){
+            Edge edge = pq.delMin();
+            int v = edge.either();
+            int w = edge.other(v);
+
+            if (uf.connected(v, w) == false) { // v-w does not create a cycle
+                uf.union(v, w); // merge v and w components
+                mst.enqueue(edge); // add edge e to mst
+                return edge;
+            }
+            return null;
+        }
+        public Iterable<Edge> edges() {
+            return mst;
+        }
+    }
+    static class Prim_MST {
+        public static final double FLOATING_POINT_EPSILON = 1E-12;
+
+        public Edge[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex
+        public double[] distTo;      // distTo[v] = weight of shortest such edge
+        public boolean[] marked;     // marked[v] = true if v on tree, false otherwise
+        public IndexMinPQ<Double> pq;
+        public UF uf;
+        public static int ind = 0;
+
+        public Prim_MST(double G[][]) {
+            edgeTo = new Edge[G.length];
+            distTo = new double[G.length];
+            marked = new boolean[G.length];
+            this.pq = new IndexMinPQ<Double>(G.length);
+
+            for (int v = 0; v < G.length; v++) {
+                distTo[v] = Double.POSITIVE_INFINITY;
+            }
+
+            distTo[ind] = 0.0;
+            pq.insert(ind, distTo[ind]);
+            this.uf = new UF(G.length);
+        }
+        // run Prim's algorithm in graph G, starting from vertex s
+        public Edge greedy_prim(double G[][]) {
+            int v = pq.delMin();
+            Edge edge = scan(G, v);
+            if (edge != null) {
+                uf.union(v, edge.other(v));
+            }
+            return edge;
+        }
+
+        // scan vertex v
+        public Edge scan(double G[][], int v) {
+            marked[v] = true;
+            for (int u = 0; u < G.length; u++) {
+                if(G[v][u] > 0) {
+                    Edge e = new Edge(v, u, G[v][u]);
+                    int w = e.other(v);
+
+                    if (marked[w] == true) {
+                        continue;         // v-w is obsolete edge
+                    }
+                    if (e.weight() < distTo[w]) {
+                        distTo[w] = e.weight();
+                        edgeTo[w] = e;
+
+                        if (pq.contains(w) == true) {
+                            pq.decreaseKey(w, distTo[w]);
+                        }
+                        else {
+                            pq.insert(w, distTo[w]);
+                        }
+                    }
+                }
+            }
+            return edgeTo[v];
+        }
+        public Iterable<Edge> edges() {
+            Queue<Edge> mst = new Queue<Edge>();
+            for (int v = 0; v < edgeTo.length; v++) {
+                Edge e = edgeTo[v];
+                
+                if (e != null) {
+                    mst.enqueue(e);
+                }
+            }
+            return mst;
+        }
+        // check optimality conditions (takes time proportional to E V lg* V)   
+    }
 	/* main()
 	   Contains code to test the PrimVsKruskal function. You may modify the
 	   testing code if needed, but nothing in this function will be considered
