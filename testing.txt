@@ -1,0 +1,142 @@
+   public static void main(String[] args) {
+        Scanner s;
+        if (args.length < 0) {
+            System.out.printf("Must provide argument");
+            return;
+        }
+        if (!args[0].contentEquals("all")){   //test a specified file
+            try{
+                s = new Scanner(new File(args[0]));
+            } catch(java.io.FileNotFoundException e){
+                System.out.printf("Unable to open %s\n",args[0]);
+                return;
+            }
+            System.out.printf("Reading input values from %s.\n",args[0]);
+            int n = s.nextInt();
+            double[][] G = new double[n][n];
+            int valuesRead = 0;
+            for (int i = 0; i < n && s.hasNextDouble(); i++){
+                for (int j = 0; j < n && s.hasNextDouble(); j++){
+                    G[i][j] = s.nextDouble();
+                    if (i == j && G[i][j] != 0.0) {
+                        System.out.printf("Adjacency matrix contains self-loops.\n");
+                        s.close();
+                        return;
+                    }
+                    if (G[i][j] < 0.0) {
+                        System.out.printf("Adjacency matrix contains negative values.\n");
+                        s.close();
+                        return;
+                    }
+                    if (j < i && G[i][j] != G[j][i]) {
+                        System.out.printf("Adjacency matrix is not symmetric.\n");
+                        s.close();
+                        return;
+                    }
+                    valuesRead++;
+                }
+            }
+            
+            if (valuesRead < n*n){
+                System.out.printf("Adjacency matrix for the graph contains too few values.\n");
+                s.close();
+                return;
+            }   
+            s.close();
+            boolean pvk = PrimVsKruskal(G);
+            System.out.printf("Does Prim MST = Kruskal MST? %b\n", pvk);
+        }
+        if (args[0].contentEquals("all")){    //test multiple files 
+            String[] testFiles = {
+                    //"TestFiles/tester.txt",
+                    "TestFiles/ewg_10vertices_0.txt",
+                    "TestFiles/ewg_10vertices_1.txt",
+                    "TestFiles/ewg_10vertices_2.txt",
+                    "TestFiles/ewg_10vertices_3.txt",
+                    "TestFiles/ewg_10vertices_4.txt",
+                    "TestFiles/ewg_10vertices_5.txt",
+                    "TestFiles/ewg_10vertices_6.txt",
+                    "TestFiles/ewg_10vertices_7.txt",
+                    "TestFiles/ewg_10vertices_8.txt",
+                    "TestFiles/ewg_10vertices_9.txt",
+                    "TestFiles/ewg_50vertices_0.txt",
+                    "TestFiles/ewg_50vertices_1.txt",
+                    "TestFiles/ewg_50vertices_2.txt",
+                    "TestFiles/ewg_50vertices_3.txt",
+                    "TestFiles/ewg_50vertices_4.txt",
+                    "TestFiles/ewg_50vertices_5.txt",
+                    "TestFiles/ewg_50vertices_6.txt",
+                    "TestFiles/ewg_50vertices_7.txt",
+                    "TestFiles/ewg_50vertices_8.txt",
+                    "TestFiles/ewg_50vertices_9.txt",
+                    "TestFiles/ewg_100vertices_0.txt",
+                    "TestFiles/ewg_100vertices_1.txt",
+                    "TestFiles/ewg_100vertices_2.txt",
+                    "TestFiles/ewg_100vertices_3.txt",
+                    "TestFiles/ewg_100vertices_4.txt",
+                    "TestFiles/ewg_100vertices_5.txt",
+                    "TestFiles/ewg_100vertices_6.txt",
+                    "TestFiles/ewg_100vertices_7.txt",
+                    "TestFiles/ewg_100vertices_8.txt",
+                    "TestFiles/ewg_100vertices_9.txt",
+            };
+            for(int file = 0; file < testFiles.length; file++) {
+                try{
+                    s = new Scanner(new File(testFiles[file]));
+                } catch(java.io.FileNotFoundException e){
+                    System.out.printf("Unable to open %s\n",testFiles[file]);
+                    return;
+                }
+                System.out.printf("Reading input values from %s.\n",testFiles[file]);
+                int n = s.nextInt();
+                double[][] G = new double[n][n];
+                int valuesRead = 0;
+                for (int i = 0; i < n && s.hasNextDouble(); i++){
+                    for (int j = 0; j < n && s.hasNextDouble(); j++){
+                        G[i][j] = s.nextDouble();
+                        if (i == j && G[i][j] != 0.0) {
+                            System.out.printf("Adjacency matrix contains self-loops.\n");
+                            s.close();
+                            return;
+                        }
+                        if (G[i][j] < 0.0) {
+                            System.out.printf("Adjacency matrix contains negative values.\n");
+                            s.close();
+                            return;
+                        }
+                        if (j < i && G[i][j] != G[j][i]) {
+                            System.out.printf("Adjacency matrix is not symmetric.\n");
+                            s.close();
+                            return;
+                        }
+                        valuesRead++;
+                    }
+                }
+                
+                if (valuesRead < n*n){
+                    System.out.printf("Adjacency matrix for the graph contains too few values.\n");
+                    s.close();
+                    return;
+                }   
+                s.close();
+                
+                boolean pvk = true;
+                long averageDuration = 0;
+                long startTime;
+                long endTime;
+                
+                for(int i = 0; i < 10; i++) {
+                    startTime = System.nanoTime();
+                    pvk = PrimVsKruskal(G);
+                    endTime = System.nanoTime();
+                    averageDuration += (endTime - startTime)/1000;  //micro seconds
+                }
+                
+                averageDuration/=5;
+                
+                System.out.printf("Does Prim MST = Kruskal MST? %b\n", pvk);
+                System.out.println("Exectution took: " + averageDuration + " micro seconds\n");
+            }
+            
+        }
+    }//end of main
